@@ -1,23 +1,28 @@
 from fastapi import FastAPI, Query
+from fastapi.middleware.cors import CORSMiddleware
 from places import get_nearby_restaurants
 import random
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], 
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.get("/recommend")
 async def recommend_restaurant(
-    lat: float = Query(..., description="위도"), 
-    lng: float = Query(..., description="경도")
+    lat: float = Query(...), lng: float = Query(...)
 ):
     restaurants = await get_nearby_restaurants(lat, lng)
-
     if not restaurants:
-        return {"message": "주변 식당을 찾을 수 없습니다."}
-
+        return {"message": "No restaurants found."}
     pick = random.choice(restaurants)
-
     return {
-        "name": pick.get("place_name"),
-        "address": pick.get("road_address_name") or pick.get("address_name", "주소 정보 없음"),
-        "category_name": pick.get("category_name").split(">")[-1].strip(),
+        "name": pick["place_name"],
+        "address": pick.get("road_address_name") or pick.get("address_name", "주소 없음")
+        
     }
