@@ -15,14 +15,29 @@ app.add_middleware(
 
 @app.get("/recommend")
 async def recommend_restaurant(
-    lat: float = Query(...), lng: float = Query(...)
+    lat: float = Query(...),
+    lng: float = Query(...),
+    category: str = Query(None)
 ):
-    restaurants = await get_nearby_restaurants(lat, lng)
-    if not restaurants:
+    all_restaurants = await get_nearby_restaurants(lat, lng)
+
+    if category:
+        # 리스트 컴프리헨션
+        # all_restaurants 리스트 순회하며,
+        # 각 식당의 category_name에 파라미터 category가 포함된 경우 리스트에 담음
+        filtered = [
+            r for r in all_restaurants
+            if category in r.get("category_name", "")
+        ]
+    else:
+        filtered = all_restaurants
+
+    if not filtered:
         return {"message": "No restaurants found."}
-    pick = random.choice(restaurants)
+
+    pick = random.choice(filtered)
     return {
         "name": pick["place_name"],
-        "address": pick.get("road_address_name") or pick.get("address_name", "주소 없음")
-        
+        "address": pick.get("road_address_name") or pick.get("address_name", "주소 없음"),
+        "category": pick.get("category_name")
     }
