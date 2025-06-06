@@ -39,5 +39,8 @@ async def recommend_restaurant(
     return {
         "name": pick["place_name"],
         "address": pick.get("road_address_name") or pick.get("address_name", "주소 없음"),
-        "category": pick.get("category_name")
+        "category": pick.get("category_name"),
+        "place": pick.get("place_url"),
+        "x": pick.get("x"),
+        "y": pick.get("y")
     }
